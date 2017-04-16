@@ -1,1 +1,1 @@
-Simple server with client to host a chat room.
+Simple server/client for hosting/connecting to a chat room.
