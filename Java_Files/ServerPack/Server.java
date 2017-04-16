@@ -1,7 +1,9 @@
 package ServerPack;
 
-import ServerPack.JavaFX.LaunchScreen.LaunchScreenController;
-import ServerPack.JavaFX.RunningScreen.RunningScreenController;
+import ServerPack.JavaFX.LaunchScreen.LaunchController;
+import ServerPack.JavaFX.RunningScreen.RunningController;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 import java.io.IOException;
 import java.net.*;
@@ -17,11 +19,12 @@ public class Server {
     private Selector selector;
     private SelectionKey serverAcceptKey;
     private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-    public LaunchScreenController launchScreenController;
-    private RunningScreenController runningScreenController;
+    public LaunchController launchController;
+    private RunningController runningController;
     protected HashMap<SelectionKey, Client> clientHashMap = new HashMap<>();
+    protected ObservableList clientList = FXCollections.observableArrayList();
 
-    public Server(int bufferSize) throws Throwable {
+    public Server(int bufferSize) {
         this.bufferSize = bufferSize;
     }
 
@@ -32,7 +35,7 @@ public class Server {
         selector = Selector.open();
         serverAcceptKey = serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
 
-        this.updateServerData(String.format("Server listening at port %s.", this.serverSocketChannel.socket().getLocalPort()));
+        this.serverMessage(String.format("Server listening at port %s.", this.serverSocketChannel.socket().getLocalPort()));
         Runnable running = new Runnable() {
             public void run() {
                 checkIO();
@@ -55,9 +58,12 @@ public class Server {
                     if (connection == null) continue;
                     connection.configureBlocking(false);
                     SelectionKey readKey = connection.register(selector, SelectionKey.OP_READ);
-                    clientHashMap.put(readKey, new Client(this, readKey, connection, this.bufferSize));
-                    this.updateServerData(String.format("New client: %s. Total clients: %s.",
+                    Client newClient = new Client(this, readKey, connection, this.bufferSize);
+                    clientHashMap.put(readKey, newClient);
+                    this.serverMessage(String.format("New client: %s. Total clients: %s.",
                             connection.getRemoteAddress(), clientHashMap.size()));
+//                    clientList.add(newClient);
+//                    this.updateClientList();
                 }
                 if (key.isReadable()) {
                     Client client = clientHashMap.get(key);
@@ -77,10 +83,9 @@ public class Server {
     public void receivedData(Client client, String data) {
         try {
             if (data.getBytes().length > this.bufferSize) {
-                this.updateServerData(String.format("Error data size exceeds buffer size: '%s'", data));
-                return;
+                this.serverMessage(String.format("Error data size exceeds buffer size: '%s'", data));
             }
-            this.parseData(client, data);
+            else this.parseData(client, data);
         } catch (Throwable t) {
             ServerMain.catcher("Server receivedData threw: %s", t);
         }
@@ -88,10 +93,23 @@ public class Server {
 
     private void parseData(Client client, String data) {
         try {
-            if (data.split(" ")[0].equals("disconnect")) {
+            // Client sent disconnect message
+            if (data.split(" ")[0].equals("[disconnect]")) {
+                try {
+                    clientList.remove(client);
+                } catch (Throwable t) {}
                 client.closeConnection();
                 data = String.format("%s disconnected.", data.split(" ", 2)[1]);
-                this.sendData_allClients(data);
+            }
+            // Client updated username
+            else if (data.split(" ")[0].equals("[username]")) {
+                String username = data.split(" ", 2)[1];
+                if (username.length() <= 15) {
+                    client.setUserName(username);
+                    data = String.format("server %s connected.", data.split(" ", 2)[1]);
+                    this.clientList.add(client);
+                    this.updateClientList();
+                }
             }
             this.updateServerData(data);
             this.sendData_allClients(data);
@@ -102,11 +120,17 @@ public class Server {
 
     private void updateServerData(String data) {
         try {
-            System.out.println(data);
-            this.runningScreenController.updateChatWindow(data);
-//            System.out.println(this.runningScreenController);
+            this.runningController.updateChatWindow("client", data);
         } catch (Throwable t) {
             ServerMain.catcher("Server updateServerData threw: %s", t);
+        }
+    }
+
+    private void serverMessage(String data) {
+        try {
+            this.runningController.updateChatWindow("server", data);
+        } catch (Throwable t) {
+            ServerMain.catcher("Server serverMessage threw: %s", t);
         }
     }
 
@@ -142,15 +166,23 @@ public class Server {
         }
     }
 
+    protected void updateClientList() {
+        try {
+            this.runningController.updateClientListView(this.clientList);
+        } catch (Throwable t) {
+            ServerMain.catcher("Server updateClientList threw: %s", t);
+        }
+    }
+
     public void setHostPort(int hostPort) {
         this.hostPort = hostPort;
     }
 
-    public void setRunningScreenController(RunningScreenController rsc) {
-        this.runningScreenController = rsc;
+    public void setRunningController(RunningController rsc) {
+        this.runningController = rsc;
     }
 
-    public void setLaunchScreenController (LaunchScreenController lsc) {
-        this.launchScreenController = lsc;
+    public void setLaunchController(LaunchController lsc) {
+        this.launchController = lsc;
     }
 }

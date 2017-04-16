@@ -1,8 +1,8 @@
 package ServerPack.JavaFX.LaunchScreen;
 
+import ServerPack.JavaFX.RunningScreen.RunningController;
 import ServerPack.Server;
 import ServerPack.ServerMain;
-import ServerPack.JavaFX.RunningScreen.RunningScreenController;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -14,17 +14,17 @@ import javafx.stage.Stage;
 import java.net.Socket;
 import java.util.regex.Pattern;
 
-public class LaunchScreenController {
+public class LaunchController {
 
     public Button startServerButton;
     public Label portTextFieldLabel;
     public TextField portTextField;
     public Text statusText;
     private Server server;
-    private RunningScreenController runningScreenController;
+    private RunningController runningController;
     private Stage stage;
 
-    public LaunchScreenController() {
+    public LaunchController() {
 
     }
 
@@ -56,12 +56,12 @@ public class LaunchScreenController {
                 this.portTextField.clear();
                 return;
             }
-            // Prep server to run and create RunningScreenController
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("../RunningScreen/runningScreenFXML.fxml"));
+            // Prep server to run and create RunningController
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("../RunningScreen/runningFXML.fxml"));
             Parent root = loader.load();
-            this.runningScreenController = loader.getController();
-            this.server.setRunningScreenController(this.runningScreenController);
-            this.runningScreenController.setServer(this.server);
+            this.runningController = loader.getController();
+            this.server.setRunningController(this.runningController);
+            this.runningController.setServer(this.server);
             this.server.setHostPort(port);
             this.server.initServer();
             // Change scene to runningScene
@@ -70,7 +70,7 @@ public class LaunchScreenController {
             this.stage.show();
         } catch (Throwable t) {
             this.portTextField.clear();
-            ServerMain.catcher("launchScreenController launchServer threw: ", t);
+            ServerMain.catcher("launchController launchServer threw: ", t);
         }
     }
 

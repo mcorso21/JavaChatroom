@@ -1,13 +1,14 @@
 package ServerPack;
 
-import ServerPack.JavaFX.LaunchScreen.LaunchScreenController;
-import ServerPack.JavaFX.RunningScreen.RunningScreenController;
+import ServerPack.JavaFX.LaunchScreen.LaunchController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.stage.WindowEvent;
+import javafx.event.EventHandler;
 
 public class ServerMain extends Application {
 
@@ -23,13 +24,19 @@ public class ServerMain extends Application {
     public void start(Stage primaryStage) {
         try {
             Server server = new Server(1024);
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("JavaFX/LaunchScreen/launchScreenFXML.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("JavaFX/LaunchScreen/launchFXML.fxml"));
             Parent root = loader.load();
-            LaunchScreenController lsc = loader.getController();
-            server.setLaunchScreenController(lsc);
+            LaunchController lsc = loader.getController();
+            server.setLaunchController(lsc);
             lsc.setServer(server);
 
-//            Parent root = loader.load(getClass().getResource("JavaFX/LaunchScreen/launchScreenFXML.fxml"));
+            primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+                public void handle(WindowEvent we) {
+                    server.shutDownServer();
+                }
+            });
+
+//            Parent root = loader.load(getClass().getResource("JavaFX/LaunchScreen/launchFXML.fxml"));
 
             primaryStage.setTitle("Chat Server");
             primaryStage.setScene(new Scene(root, 400, 200));
