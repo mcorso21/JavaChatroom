@@ -10,7 +10,7 @@
 <HBox fx:id="mainHBox" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity"
       minHeight="-Infinity" minWidth="-Infinity" nodeOrientation="LEFT_TO_RIGHT"
       prefHeight="400.0" prefWidth="600.0" spacing="10.0" xmlns="http://javafx.com/javafx/8"
-      xmlns:fx="http://javafx.com/fxml/1" fx:controller="ServerPack.JavaFX.RunningScreen.RunningController">
+      xmlns:fx="http://javafx.com/fxml/1" fx:controller="ServerPack.JavaFX.RunningController">
    <children>
       <VBox fx:id="chatAreaVBox" alignment="CENTER" fillWidth="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="380.0" prefWidth="380.0" spacing="5.0" HBox.hgrow="NEVER">
          <children>

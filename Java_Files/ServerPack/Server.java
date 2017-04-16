@@ -1,7 +1,7 @@
 package ServerPack;
 
-import ServerPack.JavaFX.LaunchScreen.LaunchController;
-import ServerPack.JavaFX.RunningScreen.RunningController;
+import ServerPack.JavaFX.LaunchController;
+import ServerPack.JavaFX.RunningController;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 

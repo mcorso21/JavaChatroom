@@ -1,6 +1,5 @@
-package ServerPack.JavaFX.RunningScreen;
+package ServerPack.JavaFX;
 
-import ServerPack.JavaFX.LaunchScreen.LaunchController;
 import ServerPack.Server;
 import ServerPack.ServerMain;
 import javafx.application.Platform;

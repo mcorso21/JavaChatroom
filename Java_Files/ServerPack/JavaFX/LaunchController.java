@@ -1,6 +1,5 @@
-package ServerPack.JavaFX.LaunchScreen;
+package ServerPack.JavaFX;
 
-import ServerPack.JavaFX.RunningScreen.RunningController;
 import ServerPack.Server;
 import ServerPack.ServerMain;
 import javafx.fxml.FXMLLoader;
@@ -53,11 +52,11 @@ public class LaunchController {
                 statusText.setText("Port must be numbers only.");
             }
             if (port == -1) {
-                this.portTextField.clear();
+                this.portTextField.setText("Invalid port number.");
                 return;
             }
             // Prep server to run and create RunningController
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("../RunningScreen/runningFXML.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("runningFXML.fxml"));
             Parent root = loader.load();
             this.runningController = loader.getController();
             this.server.setRunningController(this.runningController);
