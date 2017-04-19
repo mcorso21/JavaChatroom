@@ -22,7 +22,7 @@ public class Server {
     public LaunchController launchController;
     private RunningController runningController;
     protected HashMap<SelectionKey, Client> clientHashMap = new HashMap<>();
-    protected ObservableList clientList = FXCollections.observableArrayList();
+    protected ObservableList<Client> clientList = FXCollections.observableArrayList();
 
     public Server(int bufferSize) {
         this.bufferSize = bufferSize;
@@ -99,14 +99,14 @@ public class Server {
                     clientList.remove(client);
                 } catch (Throwable t) {}
                 client.closeConnection();
-                data = String.format("%s disconnected.", data.split(" ", 2)[1]);
+                data = String.format("000%s disconnected.", data.split(" ", 2)[1]);
             }
             // Client updated username
-            else if (data.split(" ")[0].equals("[username]")) {
+            else if (data.substring(0,3).equals("498")) {
                 String username = data.split(" ", 2)[1];
                 if (username.length() <= 15) {
                     client.setUserName(username);
-                    data = String.format("server %s connected.", data.split(" ", 2)[1]);
+                    data = String.format("000%s connected.", data.split(" ", 2)[1]);
                     this.clientList.add(client);
                     this.updateClientList();
                 }
@@ -120,7 +120,7 @@ public class Server {
 
     private void updateServerData(String data) {
         try {
-            this.runningController.updateChatWindow("client", data);
+            this.runningController.updateChatWindow("client", data.substring(3, data.length()));
         } catch (Throwable t) {
             ServerMain.catcher("Server updateServerData threw: %s", t);
         }
@@ -136,6 +136,7 @@ public class Server {
 
     private void sendData_allClients(String data) {
         try {
+            System.out.println("Sending to all clients: " + data);
             for (Client client : clientHashMap.values()) {
                 client.sendData(data);
             }
@@ -169,6 +170,15 @@ public class Server {
     protected void updateClientList() {
         try {
             this.runningController.updateClientListView(this.clientList);
+            String clientsAsCSV = "499";
+            if (this.clientList.size() > 0) {
+                for (Client client : this.clientList) {
+                    clientsAsCSV += String.format("%s,", client.toString());
+                }
+                clientsAsCSV = clientsAsCSV.substring(0, (clientsAsCSV.length() - 1));
+            }
+            this.sendData_allClients(clientsAsCSV);
+
         } catch (Throwable t) {
             ServerMain.catcher("Server updateClientList threw: %s", t);
         }

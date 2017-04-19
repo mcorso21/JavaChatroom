@@ -65,7 +65,7 @@ public class Client {
             this.socketChannel.connect(new InetSocketAddress(hostIP, hostPort));
             TimeUnit.MILLISECONDS.sleep(500);
             // Send username
-            this.sendData(String.format("[username] %s", username));
+            this.sendData(String.format("498 %s", username));
             // Run listener
             executor.execute(running);
         }
@@ -98,12 +98,31 @@ public class Client {
 
     private void parseData() {
         try {
-            this.cbuf = CharBuffer.allocate(this.bufferSize);
-            this.data = "";
+            // Get first three chars
             this.readBuf.flip();
-            this.cbuf = Charset.forName("UTF-8").decode(readBuf);
-            this.data = cbuf.toString();
-            runningController.updateChatWindow(this.data);
+            byte[] bytes = new byte[3];
+            String codeAsString = "";
+            this.readBuf.get(bytes, 0,3);
+            for (byte b : bytes) codeAsString += ((char) b);
+            int code = Integer.parseInt(codeAsString);
+
+            if (code < 500) { // Some type of string will be created
+                this.readBuf.position(3);
+                this.cbuf = CharBuffer.allocate(this.bufferSize);
+                this.data = "";
+                this.cbuf = Charset.forName("UTF-8").decode(this.readBuf);
+                this.data = this.cbuf.toString();
+
+                if (code == 0) runningController.updateChatWindow(this.data);               // general chat
+                else if (code == 499) runningController.updateClientListView(this.data);    // update client list
+            }
+            else if (code < 750) {
+                // Something else is created? Image?
+            }
+            else {
+                // Something else is created? Sound?
+            }
+
         } catch (Throwable t) {
             ClientMain.catcher("Client parseData threw: %s", t);
         }
